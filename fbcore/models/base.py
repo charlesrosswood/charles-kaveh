@@ -1,19 +1,21 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 
-# Base models.
 
 class BaseModel(models.Model):
 	""" All models in the project should inherit from this class for data consistency and traceability """
-	class Meta:
-		abstract = True
 
 	real_type = models.ForeignKey(ContentType, editable=False)
 	created = models.DateTimeField(auto_now_add=True, null=True)
 	last_updated = models.DateTimeField(auto_now=True, null=True)
+	# source = models.TextField(null=True)
+
+	class Meta:
+		abstract = True
 
 	def save(self, *args, **kwargs):
 		""" Save instance into the database, all non-nullable and non-blankable model fields must be satisfied """
+
 		if not self.id:
 			self.real_type = self._get_real_type()
 
