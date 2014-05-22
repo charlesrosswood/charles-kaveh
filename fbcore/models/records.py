@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Q
 from simple_history.models import HistoricalRecords
 
 import base
@@ -57,6 +58,31 @@ class Activities(base.BaseModel):
 			base_return += 'isometric)'
 
 		return base_return
+
+	def __init__(self):
+		super(Activities, self).__init__()
+
+		self.__check_for_personal_best__()
+
+	def __check_for_personal_best__(self):
+		current_pb = PersonalBests.objects.filter(Q(user=self.user) & Q(exercise=exercise) & Q(repetitions=self.repetitions))
+
+		if len(current_pb) == 0:
+			new_pb = PersonalBests(user=user, exercise=exercise, repetitions=repetitions, mass=mass, activity=self)
+
+			new_pb.save()
+
+			return True
+
+		elif len(current_pb) == 1 and current_pb[0].mass < self.mass:
+			current_pb[0].mass = self.mass
+
+			current_pb.save()
+
+			return True
+
+		else:
+			return False
 
 
 class PersonalBests(base.BaseModel):
